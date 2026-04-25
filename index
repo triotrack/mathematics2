@@ -1,0 +1,533 @@
+import React, { useState, useEffect } from 'react';
+import { BookOpen, CheckCircle, Calculator, ChevronRight, Eye, EyeOff, Award } from 'lucide-react';
+
+// --- DATA: THE QUESTION BANK ---
+// Pre-loaded with highly repeated and surely asked questions from 2022-2025 exams.
+const examData = {
+  module1: {
+    title: "Matrices & Determinants",
+    marks: {
+      1: [
+        {
+          id: "m1-1-1",
+          question: "Evaluate $$ \\begin{vmatrix} \\sin x & \\cos x \\\\ -\\cos x & \\sin x \\end{vmatrix} $$",
+          steps: [
+            "Step 1 (Cross-multiply): $$ (\\sin x \\cdot \\sin x) - (\\cos x \\cdot -\\cos x) $$",
+            "Step 2 (Simplify): $$ \\sin^2 x - (-\\cos^2 x) = \\sin^2 x + \\cos^2 x $$",
+            "Final Answer: $$ 1 $$ (Using identity $$ \\sin^2 x + \\cos^2 x = 1 $$)"
+          ]
+        },
+        {
+          id: "m1-1-2",
+          question: "Find $$ A+B $$ if $$ A = \\begin{bmatrix} 0 & 0 \\\\ 2 & 1 \\end{bmatrix} $$ and $$ B = \\begin{bmatrix} 3 & 7 \\\\ 4 & 8 \\end{bmatrix} $$",
+          steps: [
+            "Step 1 (Add corresponding elements): $$ \\begin{bmatrix} 0+3 & 0+7 \\\\ 2+4 & 1+8 \\end{bmatrix} $$",
+            "Final Answer: $$ \\begin{bmatrix} 3 & 7 \\\\ 6 & 9 \\end{bmatrix} $$"
+          ]
+        },
+        {
+          id: "m1-1-3",
+          question: "Evaluate $$ \\begin{vmatrix} 4 & 1 \\\\ 2 & 3 \\end{vmatrix} $$",
+          steps: [
+            "Step 1: $$ (4 \\times 3) - (1 \\times 2) $$",
+            "Step 2: $$ 12 - 2 $$",
+            "Final Answer: $$ 10 $$"
+          ]
+        },
+        {
+          id: "m1-1-4",
+          question: "Find $$ A^T $$ if $$ A = \\begin{bmatrix} 1 & 3 & 5 \\\\ 3 & 4 & 2 \\\\ 2 & 1 & 3 \\end{bmatrix} $$",
+          steps: [
+            "Step 1 (Swap rows into columns): Row 1 becomes Column 1, etc.",
+            "Final Answer: $$ \\begin{bmatrix} 1 & 3 & 2 \\\\ 3 & 4 & 1 \\\\ 5 & 2 & 3 \\end{bmatrix} $$"
+          ]
+        },
+        {
+          id: "m1-1-5",
+          question: "Find $$ 3A $$ if $$ A = \\begin{bmatrix} 1 & 4 & 3 \\\\ 2 & 1 & 6 \\\\ -1 & 2 & 0 \\end{bmatrix} $$",
+          steps: [
+            "Step 1 (Multiply all elements by 3): $$ \\begin{bmatrix} 3(1) & 3(4) & 3(3) \\\\ 3(2) & 3(1) & 3(6) \\\\ 3(-1) & 3(2) & 3(0) \\end{bmatrix} $$",
+            "Final Answer: $$ \\begin{bmatrix} 3 & 12 & 9 \\\\ 6 & 3 & 18 \\\\ -3 & 6 & 0 \\end{bmatrix} $$"
+          ]
+        }
+      ],
+      3: [
+        {
+          id: "m1-3-1",
+          question: "Solve for $$ x $$ if $$ \\begin{vmatrix} x & 3 \\\\ 12 & x \\end{vmatrix} = \\begin{vmatrix} 4 & 3 \\\\ 1 & 4 \\end{vmatrix} $$",
+          steps: [
+            "Step 1 (Expand determinants): $$ x^2 - 36 = 16 - 3 $$",
+            "Step 2 (Simplify): $$ x^2 - 36 = 13 \\implies x^2 = 49 $$",
+            "Final Answer: $$ x = \\pm 7 $$"
+          ]
+        },
+        {
+          id: "m1-3-2",
+          question: "If $$ A = \\begin{bmatrix} 1 & 4 & 3 \\\\ 2 & 1 & 6 \\\\ -1 & 2 & 0 \\end{bmatrix} $$, compute $$ A + A^T $$",
+          steps: [
+            "Step 1 (Find Transpose): $$ A^T = \\begin{bmatrix} 1 & 2 & -1 \\\\ 4 & 1 & 2 \\\\ 3 & 6 & 0 \\end{bmatrix} $$",
+            "Step 2 (Add corresponding elements): $$ \\begin{bmatrix} 1+1 & 4+2 & 3-1 \\\\ 2+4 & 1+1 & 6+2 \\\\ -1+3 & 2+6 & 0+0 \\end{bmatrix} $$",
+            "Final Answer: $$ \\begin{bmatrix} 2 & 6 & 2 \\\\ 6 & 2 & 8 \\\\ 2 & 8 & 0 \\end{bmatrix} $$"
+          ]
+        },
+        {
+          id: "m1-3-3",
+          question: "Find the inverse of the matrix $$ A = \\begin{bmatrix} 1 & 2 \\\\ 4 & 9 \\end{bmatrix} $$",
+          steps: [
+            "Step 1 (Find Determinant): $$ |A| = (1 \\times 9) - (2 \\times 4) = 9 - 8 = 1 $$",
+            "Step 2 (Find Adjoint): Swap diagonal elements, change signs of off-diagonal. $$ Adj A = \\begin{bmatrix} 9 & -2 \\\\ -4 & 1 \\end{bmatrix} $$",
+            "Final Answer: $$ A^{-1} = \\frac{1}{|A|} Adj A = \\begin{bmatrix} 9 & -2 \\\\ -4 & 1 \\end{bmatrix} $$"
+          ]
+        }
+      ],
+      7: [
+        {
+          id: "m1-7-1",
+          question: "Solve using Cramer's rule: $$ x+2y-z=-3 $$, $$ 3x+y+z=4 $$, $$ x-y+2z=6 $$ (Repeated 2022, 2024, 2025)",
+          steps: [
+            "Step 1 (Find $$ \\Delta $$): $$ \\Delta = \\begin{vmatrix} 1 & 2 & -1 \\\\ 3 & 1 & 1 \\\\ 1 & -1 & 2 \\end{vmatrix} = 1(2 - (-1)) - 2(6 - 1) - 1(-3 - 1) = 3 - 10 + 4 = -3 $$",
+            "Step 2 (Find $$ \\Delta_1 $$): Replace Col 1 with answers. $$ \\Delta_1 = \\begin{vmatrix} -3 & 2 & -1 \\\\ 4 & 1 & 1 \\\\ 6 & -1 & 2 \\end{vmatrix} = -3 $$",
+            "Step 3 (Find $$ \\Delta_2 $$ and $$ \\Delta_3 $$): $$ \\Delta_2 = 3 $$, $$ \\Delta_3 = -6 $$",
+            "Step 4 (Calculate variables): $$ x = \\frac{\\Delta_1}{\\Delta} = \\frac{-3}{-3} = 1 $$",
+            "Step 5 (Calculate variables): $$ y = \\frac{\\Delta_2}{\\Delta} = \\frac{3}{-3} = -1 $$",
+            "Step 6 (Calculate variables): $$ z = \\frac{\\Delta_3}{\\Delta} = \\frac{-6}{-3} = 2 $$",
+            "Final Answer: $$ x = 1, y = -1, z = 2 $$"
+          ]
+        },
+        {
+          id: "m1-7-2",
+          question: "Solve using inverse matrix method: $$ 5x-y=3 $$, $$ 4x+2y=-1 $$ (2023)",
+          steps: [
+            "Step 1 (Matrix Form AX=B): $$ \\begin{bmatrix} 5 & -1 \\\\ 4 & 2 \\end{bmatrix} \\begin{bmatrix} x \\\\ y \\end{bmatrix} = \\begin{bmatrix} 3 \\\\ -1 \\end{bmatrix} $$",
+            "Step 2 (Find |A|): $$ |A| = 10 - (-4) = 14 $$",
+            "Step 3 (Find Adjoint): $$ Adj A = \\begin{bmatrix} 2 & 1 \\\\ -4 & 5 \\end{bmatrix} $$",
+            "Step 4 (Find Inverse): $$ A^{-1} = \\frac{1}{14} \\begin{bmatrix} 2 & 1 \\\\ -4 & 5 \\end{bmatrix} $$",
+            "Step 5 (Multiply $$ X = A^{-1}B $$): $$ X = \\frac{1}{14} \\begin{bmatrix} 2(3)+1(-1) \\\\ -4(3)+5(-1) \\end{bmatrix} = \\frac{1}{14} \\begin{bmatrix} 5 \\\\ -17 \\end{bmatrix} $$",
+            "Final Answer: $$ x = \\frac{5}{14}, y = -\\frac{17}{14} $$"
+          ]
+        }
+      ]
+    }
+  },
+  module2: {
+    title: "Vectors",
+    marks: {
+      1: [
+        {
+          id: "m2-1-1",
+          question: "Find $$ \\vec{a} + \\vec{b} $$ if $$ \\vec{a} = 3\\hat{i} + 4\\hat{j} - 2\\hat{k} $$ and $$ \\vec{b} = 2\\hat{i} - 3\\hat{j} - 2\\hat{k} $$",
+          steps: [
+            "Step 1 (Add corresponding components): $$ (3+2)\\hat{i} + (4-3)\\hat{j} + (-2-2)\\hat{k} $$",
+            "Final Answer: $$ 5\\hat{i} + \\hat{j} - 4\\hat{k} $$"
+          ]
+        },
+        {
+          id: "m2-1-2",
+          question: "Find the vector joining $$ (1, 2, -3) $$ and $$ (3, 1, 1) $$",
+          steps: [
+            "Step 1 (Subtract coordinates): $$ (x_2-x_1)\\hat{i} + (y_2-y_1)\\hat{j} + (z_2-z_1)\\hat{k} $$",
+            "Step 2: $$ (3-1)\\hat{i} + (1-2)\\hat{j} + (1-(-3))\\hat{k} $$",
+            "Final Answer: $$ 2\\hat{i} - \\hat{j} + 4\\hat{k} $$"
+          ]
+        }
+      ],
+      3: [
+        {
+          id: "m2-3-1",
+          question: "Find dot product and angle between vectors $$ \\vec{a} = \\hat{i} - 2\\hat{j} + 3\\hat{k} $$ and $$ \\vec{b} = 3\\hat{i} - 2\\hat{j} + \\hat{k} $$",
+          steps: [
+            "Step 1 (Dot Product $$ \\vec{a}\\cdot\\vec{b} $$): $$ (1)(3) + (-2)(-2) + (3)(1) = 3 + 4 + 3 = 10 $$",
+            "Step 2 (Magnitudes): $$ |\\vec{a}| = \\sqrt{1^2 + (-2)^2 + 3^2} = \\sqrt{14} $$, $$ |\\vec{b}| = \\sqrt{3^2 + (-2)^2 + 1^2} = \\sqrt{14} $$",
+            "Step 3 (Angle): $$ \\cos \\theta = \\frac{\\vec{a}\\cdot\\vec{b}}{|\\vec{a}||\\vec{b}|} = \\frac{10}{\\sqrt{14}\\sqrt{14}} = \\frac{10}{14} $$",
+            "Final Answer: Dot Product = 10, $$ \\theta = \\cos^{-1}\\left(\\frac{5}{7}\\right) $$"
+          ]
+        },
+        {
+          id: "m2-3-2",
+          question: "Find $$ \\vec{a} \\times \\vec{b} $$ if $$ \\vec{a} = 3\\hat{i} + \\hat{j} - 2\\hat{k} $$ and $$ \\vec{b} = \\hat{i} - 3\\hat{j} + 4\\hat{k} $$",
+          steps: [
+            "Step 1 (Set up determinant): $$ \\begin{vmatrix} \\hat{i} & \\hat{j} & \\hat{k} \\\\ 3 & 1 & -2 \\\\ 1 & -3 & 4 \\end{vmatrix} $$",
+            "Step 2 (Expand): $$ \\hat{i}(4 - 6) - \\hat{j}(12 - (-2)) + \\hat{k}(-9 - 1) $$",
+            "Final Answer: $$ -2\\hat{i} - 14\\hat{j} - 10\\hat{k} $$"
+          ]
+        }
+      ],
+      7: [
+        {
+          id: "m2-7-1",
+          question: "Find the work done in moving an object along the vector $$ 3\\hat{i} + 2\\hat{j} - 5\\hat{k} $$ if the force applied is $$ 5\\hat{i} + 4\\hat{j} + \\hat{k} $$",
+          steps: [
+            "Step 1 (Identify Vectors): Displacement $$ \\vec{d} = 3\\hat{i} + 2\\hat{j} - 5\\hat{k} $$, Force $$ \\vec{F} = 5\\hat{i} + 4\\hat{j} + \\hat{k} $$",
+            "Step 2 (Work Formula): Work Done $$ W = \\vec{F} \\cdot \\vec{d} $$",
+            "Step 3 (Calculate dot product): $$ W = (5)(3) + (4)(2) + (1)(-5) $$",
+            "Step 4 (Simplify): $$ W = 15 + 8 - 5 $$",
+            "Final Answer: $$ W = 18 \\text{ units} $$"
+          ]
+        },
+        {
+          id: "m2-7-2",
+          question: "Find the moment about the point $$ \\hat{i} + 2\\hat{j} - \\hat{k} $$ of the force represented by $$ \\hat{i} + 2\\hat{j} + \\hat{k} $$ acting through the point $$ 2\\hat{i} + 3\\hat{j} + \\hat{k} $$",
+          steps: [
+            "Step 1 (Find position vector $$ \\vec{r} $$): $$ \\vec{r} = \\text{(Point of Action)} - \\text{(Point of Moment)} $$",
+            "Step 2: $$ \\vec{r} = (2\\hat{i} + 3\\hat{j} + \\hat{k}) - (\\hat{i} + 2\\hat{j} - \\hat{k}) = \\hat{i} + \\hat{j} + 2\\hat{k} $$",
+            "Step 3 (Moment Formula): $$ \\vec{M} = \\vec{r} \\times \\vec{F} $$",
+            "Step 4 (Calculate Cross Product): $$ \\begin{vmatrix} \\hat{i} & \\hat{j} & \\hat{k} \\\\ 1 & 1 & 2 \\\\ 1 & 2 & 1 \\end{vmatrix} $$",
+            "Step 5 (Expand): $$ \\hat{i}(1-4) - \\hat{j}(1-2) + \\hat{k}(2-1) = -3\\hat{i} + \\hat{j} + \\hat{k} $$",
+            "Step 6 (Magnitude): $$ |\\vec{M}| = \\sqrt{(-3)^2 + 1^2 + 1^2} = \\sqrt{9+1+1} $$",
+            "Final Answer: Moment Vector = $$ -3\\hat{i} + \\hat{j} + \\hat{k} $$, Magnitude = $$ \\sqrt{11} $$"
+          ]
+        }
+      ]
+    }
+  },
+  module3: {
+    title: "Integral Calculus",
+    marks: {
+      1: [
+        {
+          id: "m3-1-1",
+          question: "Evaluate $$ \\int \\sec^2 x \\, dx $$",
+          steps: [
+            "Step 1: Direct formula application.",
+            "Final Answer: $$ \\tan x + C $$"
+          ]
+        },
+        {
+          id: "m3-1-2",
+          question: "Evaluate $$ \\int (2x + 3) \\, dx $$",
+          steps: [
+            "Step 1: Separate the integrals: $$ 2\\int x \\, dx + \\int 3 \\, dx $$",
+            "Step 2: Apply power rule: $$ 2\\left(\\frac{x^2}{2}\\right) + 3x $$",
+            "Final Answer: $$ x^2 + 3x + C $$"
+          ]
+        }
+      ],
+      3: [
+        {
+          id: "m3-3-1",
+          question: "Find $$ \\int \\frac{2 + \\sin x}{\\cos^2 x} \\, dx $$",
+          steps: [
+            "Step 1 (Separate fraction): $$ \\int \\left( \\frac{2}{\\cos^2 x} + \\frac{\\sin x}{\\cos^2 x} \\right) dx $$",
+            "Step 2 (Use identities): $$ \\int (2 \\sec^2 x + \\tan x \\sec x) \\, dx $$",
+            "Step 3 (Integrate terms): $$ 2 \\tan x + \\sec x $$",
+            "Final Answer: $$ 2 \\tan x + \\sec x + C $$"
+          ]
+        },
+        {
+          id: "m3-3-2",
+          question: "Evaluate $$ \\int_{0}^{1} \\frac{1}{\\sqrt{1-x^2}} \\, dx $$",
+          steps: [
+            "Step 1 (Identify formula): The integral of $$ \\frac{1}{\\sqrt{1-x^2}} $$ is $$ \\sin^{-1} x $$",
+            "Step 2 (Apply limits): $$ [\\sin^{-1} x]_0^1 = \\sin^{-1}(1) - \\sin^{-1}(0) $$",
+            "Final Answer: $$ \\frac{\\pi}{2} - 0 = \\frac{\\pi}{2} $$"
+          ]
+        }
+      ],
+      7: [
+        {
+          id: "m3-7-1",
+          question: "Evaluate $$ \\int x^2 \\log x \\, dx $$",
+          steps: [
+            "Step 1 (Integration by Parts Formula): $$ \\int u v \\, dx = u \\int v \\, dx - \\int (u' \\int v \\, dx) \\, dx $$",
+            "Step 2 (Choose u and dv/dx): By ILATE rule, let $$ u = \\log x $$ and $$ v = x^2 $$",
+            "Step 3 (Apply formula): $$ (\\log x)\\left(\\frac{x^3}{3}\\right) - \\int \\left(\\frac{1}{x} \\cdot \\frac{x^3}{3}\\right) \\, dx $$",
+            "Step 4 (Simplify integral): $$ \\frac{x^3}{3} \\log x - \\frac{1}{3} \\int x^2 \\, dx $$",
+            "Step 5 (Final Integration): $$ \\frac{x^3}{3} \\log x - \\frac{1}{3} \\left(\\frac{x^3}{3}\\right) $$",
+            "Final Answer: $$ \\frac{x^3}{3} \\log x - \\frac{x^3}{9} + C $$"
+          ]
+        },
+        {
+          id: "m3-7-2",
+          question: "Evaluate $$ \\int_{0}^{\\pi/2} \\frac{\\cos x}{1 + \\sin x} \\, dx $$",
+          steps: [
+            "Step 1 (Substitution): Put $$ u = 1 + \\sin x $$, then $$ du = \\cos x \\, dx $$",
+            "Step 2 (Change limits): When $$ x = 0, u = 1 $$. When $$ x = \\pi/2, u = 2 $$",
+            "Step 3 (Rewrite integral): $$ \\int_{1}^{2} \\frac{du}{u} $$",
+            "Step 4 (Integrate): $$ [\\log u]_{1}^{2} $$",
+            "Step 5 (Apply limits): $$ \\log(2) - \\log(1) $$",
+            "Final Answer: $$ \\log(2) $$"
+          ]
+        }
+      ]
+    }
+  },
+  module4: {
+    title: "Differential Equations & Area",
+    marks: {
+      1: [
+        {
+          id: "m4-1-1",
+          question: "Find the order and degree of the differential equation $$ 5\\frac{d^3y}{dx^3} - 6\\left(\\frac{dy}{dx}\\right)^2 + 4y = 0 $$",
+          steps: [
+            "Step 1: The highest derivative is $$ \\frac{d^3y}{dx^3} $$, so order is 3.",
+            "Step 2: The power of the highest derivative is 1, so degree is 1.",
+            "Final Answer: Order = 3, Degree = 1"
+          ]
+        },
+        {
+          id: "m4-1-2",
+          question: "Solve $$ \\frac{dy}{dx} = x $$",
+          steps: [
+            "Step 1: Separate variables $$ dy = x \\, dx $$",
+            "Step 2: Integrate both sides $$ \\int dy = \\int x \\, dx $$",
+            "Final Answer: $$ y = \\frac{x^2}{2} + C $$"
+          ]
+        }
+      ],
+      3: [
+        {
+          id: "m4-3-1",
+          question: "Find the area under the straight line $$ y = 2x + 3 $$ bounded by the X-axis and the ordinates at $$ x = 1 $$ and $$ x = 3 $$",
+          steps: [
+            "Step 1 (Area Formula): $$ A = \\int_{a}^{b} y \\, dx $$",
+            "Step 2 (Setup Integral): $$ A = \\int_{1}^{3} (2x + 3) \\, dx $$",
+            "Step 3 (Integrate): $$ \\left[ x^2 + 3x \\right]_{1}^{3} $$",
+            "Step 4 (Apply limits): $$ (3^2 + 3(3)) - (1^2 + 3(1)) = (9 + 9) - (1 + 3) = 18 - 4 $$",
+            "Final Answer: $$ 14 \\text{ sq. units} $$"
+          ]
+        },
+        {
+          id: "m4-3-2",
+          question: "Solve $$ \\frac{dy}{dx} = 2y $$",
+          steps: [
+            "Step 1 (Separate variables): $$ \\frac{dy}{y} = 2 \\, dx $$",
+            "Step 2 (Integrate): $$ \\int \\frac{dy}{y} = \\int 2 \\, dx $$",
+            "Step 3 (Compute): $$ \\log y = 2x + C $$",
+            "Final Answer: $$ y = k e^{2x} $$ (where k is constant $$ e^C $$)"
+          ]
+        }
+      ],
+      7: [
+        {
+          id: "m4-7-1",
+          question: "Solve the linear differential equation $$ \\frac{dy}{dx} + y \\cot x = \\csc x $$",
+          steps: [
+            "Step 1 (Identify form): This is $$ \\frac{dy}{dx} + Py = Q $$ where $$ P = \\cot x $$ and $$ Q = \\csc x $$",
+            "Step 2 (Find Integrating Factor IF): $$ IF = e^{\\int P \\, dx} = e^{\\int \\cot x \\, dx} $$",
+            "Step 3 (Compute IF): $$ e^{\\log(\\sin x)} = \\sin x $$",
+            "Step 4 (Solution Formula): $$ y(IF) = \\int Q(IF) \\, dx $$",
+            "Step 5 (Substitute): $$ y(\\sin x) = \\int (\\csc x \\cdot \\sin x) \\, dx $$",
+            "Step 6 (Simplify and Integrate): $$ y \\sin x = \\int 1 \\, dx $$",
+            "Final Answer: $$ y \\sin x = x + C $$"
+          ]
+        },
+        {
+          id: "m4-7-2",
+          question: "Solve $$ dx(1+y^2) = dy(1+x^2) $$",
+          steps: [
+            "Step 1 (Separate variables): $$ \\frac{dx}{1+x^2} = \\frac{dy}{1+y^2} $$",
+            "Step 2 (Integrate both sides): $$ \\int \\frac{dx}{1+x^2} = \\int \\frac{dy}{1+y^2} $$",
+            "Step 3 (Apply formula): Integral of $$ \\frac{1}{1+x^2} $$ is $$ \\tan^{-1} x $$",
+            "Step 4 (Compute): $$ \\tan^{-1} x = \\tan^{-1} y + C $$",
+            "Final Answer: $$ \\tan^{-1} x - \\tan^{-1} y = C $$"
+          ]
+        }
+      ]
+    }
+  }
+};
+
+export default function App() {
+  const [activeModule, setActiveModule] = useState('module1');
+  const [activeMark, setActiveMark] = useState('3');
+  const [revealedAnswers, setRevealedAnswers] = useState({});
+
+  // Render MathJax dynamically
+  useEffect(() => {
+    // Inject MathJax Script if it doesn't exist
+    if (!window.MathJax) {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.async = true;
+      document.head.appendChild(script);
+    }
+  }, []);
+
+  // Typeset MathJax every time the module, mark, or reveal state changes
+  useEffect(() => {
+    if (window.MathJax) {
+      // Small timeout to ensure React has updated the DOM
+      setTimeout(() => {
+        window.MathJax.typesetPromise();
+      }, 50);
+    }
+  }, [activeModule, activeMark, revealedAnswers]);
+
+  const toggleAnswer = (id) => {
+    setRevealedAnswers(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const currentQuestions = examData[activeModule].marks[activeMark];
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-12">
+      {/* Header */}
+      <header className="bg-indigo-600 text-white shadow-lg sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Calculator className="w-8 h-8 text-indigo-200" />
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">SBTE Math II Pro</h1>
+              <p className="text-indigo-200 text-sm">Exam Revision 2021 Syllabus</p>
+            </div>
+          </div>
+          <div className="flex bg-indigo-700 rounded-lg p-1">
+            {['1', '3', '7'].map(mark => (
+              <button
+                key={mark}
+                onClick={() => setActiveMark(mark)}
+                className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${
+                  activeMark === mark 
+                    ? 'bg-white text-indigo-700 shadow' 
+                    : 'text-indigo-100 hover:bg-indigo-600'
+                }`}
+              >
+                {mark} Marks
+              </button>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
+        
+        {/* Sidebar Navigation */}
+        <aside className="w-full md:w-64 flex-shrink-0">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden sticky top-28">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-600 flex items-center gap-2">
+              <BookOpen className="w-4 h-4" /> Select Module
+            </div>
+            <ul className="flex flex-col">
+              {Object.entries(examData).map(([modKey, modData], index) => (
+                <li key={modKey}>
+                  <button
+                    onClick={() => setActiveModule(modKey)}
+                    className={`w-full text-left px-4 py-4 border-b border-slate-100 flex items-center justify-between transition-colors ${
+                      activeModule === modKey 
+                        ? 'bg-indigo-50 text-indigo-700 font-bold border-l-4 border-l-indigo-600' 
+                        : 'hover:bg-slate-50 text-slate-600'
+                    }`}
+                  >
+                    <span>
+                      <span className="text-xs opacity-60 block uppercase tracking-wider mb-1">Module {index + 1}</span>
+                      {modData.title}
+                    </span>
+                    <ChevronRight className={`w-4 h-4 ${activeModule === modKey ? 'text-indigo-600' : 'text-slate-300'}`} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </aside>
+
+        {/* Content Area */}
+        <section className="flex-1">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+              <Award className="w-6 h-6 text-yellow-500" />
+              {activeMark}-Mark Questions
+            </h2>
+            <span className="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full">
+              {examData[activeModule].title}
+            </span>
+          </div>
+
+          <div className="space-y-6">
+            {currentQuestions.map((q, idx) => {
+              const isRevealed = revealedAnswers[q.id];
+              return (
+                <div key={q.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-all hover:shadow-md">
+                  {/* Question Header */}
+                  <div className="p-5 bg-slate-50 border-b border-slate-100 flex gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                      Q{idx + 1}
+                    </div>
+                    <div className="flex-1 pt-1 overflow-x-auto text-lg text-slate-800 font-medium leading-relaxed math-display">
+                      {q.question}
+                    </div>
+                  </div>
+
+                  {/* Action Bar */}
+                  <div className="px-5 py-3 bg-white flex justify-between items-center">
+                    <button
+                      onClick={() => toggleAnswer(q.id)}
+                      className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-colors ${
+                        isRevealed 
+                          ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' 
+                          : 'bg-green-50 text-green-700 hover:bg-green-100'
+                      }`}
+                    >
+                      {isRevealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {isRevealed ? 'Hide Solution Steps' : 'View Step-by-Step Solution'}
+                    </button>
+                  </div>
+
+                  {/* Solution Area */}
+                  {isRevealed && (
+                    <div className="p-6 border-t border-slate-100 bg-slate-50/50">
+                      <div className="space-y-4">
+                        {q.steps.map((step, stepIdx) => (
+                          <div 
+                            key={stepIdx} 
+                            className={`p-4 rounded-lg flex gap-4 ${
+                              stepIdx === q.steps.length - 1 
+                                ? 'bg-indigo-50 border border-indigo-100' 
+                                : 'bg-white border border-slate-200'
+                            }`}
+                          >
+                            <div className="flex-shrink-0 mt-1">
+                              {stepIdx === q.steps.length - 1 ? (
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                              ) : (
+                                <div className="w-5 h-5 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px] font-bold">
+                                  {stepIdx + 1}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 overflow-x-auto math-display text-slate-700">
+                              {step}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            
+            {currentQuestions.length === 0 && (
+              <div className="p-12 text-center bg-white rounded-xl border border-dashed border-slate-300">
+                <p className="text-slate-500">More questions are being added to this category.</p>
+              </div>
+            )}
+          </div>
+        </section>
+      </main>
+
+      {/* Global Styles for Math Overflow */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .math-display {
+          overflow-x: auto;
+          overflow-y: hidden;
+          padding-bottom: 4px;
+        }
+        /* Scrollbar styling for math blocks */
+        .math-display::-webkit-scrollbar {
+          height: 6px;
+        }
+        .math-display::-webkit-scrollbar-track {
+          background: #f1f5f9; 
+          border-radius: 4px;
+        }
+        .math-display::-webkit-scrollbar-thumb {
+          background: #cbd5e1; 
+          border-radius: 4px;
+        }
+        .math-display::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8; 
+        }
+      `}} />
+    </div>
+  );
+}
